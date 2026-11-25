@@ -16,7 +16,7 @@ colors; everything else looks and behaves the same:
 | App | What it does |
 |-----|--------------|
 | [VoxKey](https://github.com/georgecristea/VoxKey) | Push-to-talk dictation, transcribed on-device |
-| [ClipVault](https://github.com/georgecristea/ClipVault) | Private clipboard history |
+| [ClipVault](https://github.com/georgecristea/ClipVault) | Private clipboard history in a bar at the bottom of the screen |
 | [Upkeep](https://github.com/georgecristea/upkeep) | Keeps a curated list of Mac apps and CLIs up to date |
 
 ## Requirements
@@ -124,6 +124,20 @@ swift package unedit MacUtilityKit                         # back to the release
 ```
 
 When the change is ready, tag a new version here and bump the app's dependency.
+
+## Related projects
+
+Open-source Mac utilities by the same author, built on one shared toolkit:
+
+| Project | What it is |
+|---------|------------|
+| [ClipVault](https://github.com/georgecristea/ClipVault) | Clipboard history in a bar at the bottom of the screen: ⇧⌘V, type to search, paste |
+| [VoxKey](https://github.com/georgecristea/VoxKey) | Push-to-talk dictation, transcribed on your Mac |
+| [Upkeep](https://github.com/georgecristea/upkeep) | Keeps a curated list of Mac apps and command-line tools up to date |
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). Security issues: [SECURITY.md](SECURITY.md).
 
 ## License
 
