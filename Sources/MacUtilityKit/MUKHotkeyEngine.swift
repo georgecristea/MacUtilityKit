@@ -12,6 +12,7 @@ public final class MUKHotkeyEngine {
 
     private var monitors: [Any] = []
     private var isPressed = false
+    private var releaseWatchdog: Task<Void, Never>?
 
     public init(binding: MUKHotkey, onDown: @escaping () -> Void, onUp: @escaping () -> Void) {
         self.binding = binding
@@ -46,10 +47,7 @@ public final class MUKHotkeyEngine {
     public func stop() {
         for monitor in monitors { NSEvent.removeMonitor(monitor) }
         monitors.removeAll()
-        if isPressed {
-            isPressed = false
-            onUp()
-        }
+        if isPressed { fireUp() }
     }
 
     private func handle(_ event: NSEvent) {
@@ -85,11 +83,41 @@ public final class MUKHotkeyEngine {
 
     private func fireDown() {
         isPressed = true
+        startReleaseWatchdog()
         onDown()
     }
 
     private func fireUp() {
         isPressed = false
+        releaseWatchdog?.cancel()
+        releaseWatchdog = nil
         onUp()
+    }
+
+    /// Event monitors can drop the release event (secure input, focus changes, the
+    /// release landing elsewhere), which would leave the hotkey "held" forever. While
+    /// pressed, poll the real keyboard state and fire `onUp` once the binding is let go.
+    private func startReleaseWatchdog() {
+        releaseWatchdog?.cancel()
+        releaseWatchdog = Task { @MainActor [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 100_000_000)
+                guard let self, self.isPressed, !Task.isCancelled else { return }
+                if !self.isBindingPhysicallyHeld() {
+                    self.fireUp()
+                    return
+                }
+            }
+        }
+    }
+
+    private func isBindingPhysicallyHeld() -> Bool {
+        let raw = CGEventSource.flagsState(.combinedSessionState).rawValue
+        let flags = NSEvent.ModifierFlags(rawValue: UInt(raw)).intersection(.deviceIndependentFlagsMask)
+        guard MUKHotkey.modifiers(from: flags).isSuperset(of: binding.modifiers) else { return false }
+        if let keyCode = binding.keyCode {
+            return CGEventSource.keyState(.combinedSessionState, key: CGKeyCode(keyCode))
+        }
+        return true
     }
 }
