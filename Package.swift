@@ -11,7 +11,8 @@ let package = Package(
         .library(name: "MacUtilityKit", targets: ["MacUtilityKit"])
     ],
     targets: [
-        .target(name: "MacUtilityKit")
+        .target(name: "MacUtilityKit"),
+        .testTarget(name: "MacUtilityKitTests", dependencies: ["MacUtilityKit"])
     ],
     swiftLanguageVersions: [.v5]
 )

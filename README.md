@@ -97,14 +97,15 @@ struct MainPopoverView: View {
 | Theme | `MUKBrand`, `MUKTheme` (sizes, spacing, semantic colors), `MUKStatusMessage` |
 | Popover layout | `MUKPopoverShell`, `MUKHeader`, `MUKBackHeader`, `MUKStatusFooter`, `MUKPopoverBackground` |
 | Components | `MUKBrandIcon`, `MUKCard`, `MUKIconButton`, `MUKPrimaryButton`, `MUKBadge`, `MUKStatusChip`, `MUKSettingsRow`, `MUKProgressBar` (determinate or not), `MUKEmptyState`, `MUKLevelMeter` |
-| Hotkeys | `MUKHotkey` (Codable binding + display string), `MUKHotkeyEngine` (hold to talk: key down / key up), `MUKGlobalShortcut` (tap to trigger), `MUKHotkeyRecorder` (SwiftUI recorder with conflict warnings) |
+| Hotkeys | `MUKHotkey` (Codable binding + display string), `MUKHotkeyEngine` (hold to talk: key down / key up), `MUKGlobalShortcut` (tap to trigger, event monitors), `MUKCarbonHotKey` (tap to trigger via Carbon: no permission, the key press is consumed), `MUKHotkeyRecorder` (SwiftUI recorder with conflict warnings; `allowsModifierOnly: false` for key shortcuts) |
 | Permissions & onboarding | `MUKPermissions` (microphone, accessibility), `MUKPermissionRequirement`, `MUKOnboardingView` (first-run checklist that re-checks live) |
-| System | `MUKLaunchAtLoginManager`, `MUKPasteInjector` + `MUKPasteboardSnapshot` (paste with ⌘V, restore the clipboard), `MUKPreviewPanel` (floating panel that never takes focus), `MUKHardware` (chip, RAM, cores) |
+| System | `MUKLaunchAtLoginManager`, `MUKPasteInjector` + `MUKPasteboardSnapshot` (paste with ⌘V on any keyboard layout, restore the clipboard), `MUKKeyboardLayout` (key code ↔ character in the current layout), `MUKPreviewPanel` (floating panel that never takes focus), `MUKHardware` (chip, RAM, cores) |
 
 ## Things to know
 
 - **Accessibility permission.** The hotkey monitors and `MUKPasteInjector` use global event
   monitors and synthetic key events, which macOS only allows once the user grants Accessibility.
+  `MUKCarbonHotKey` needs no permission.
 - **Microphone.** `MUKPermissions` can request microphone access; your app's `Info.plist` needs an
   `NSMicrophoneUsageDescription`.
 - **Launch at login** writes a per-user LaunchAgent (`~/Library/LaunchAgents/<label>.plist`), not

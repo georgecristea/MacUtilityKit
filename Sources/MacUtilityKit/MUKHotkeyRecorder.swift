@@ -10,8 +10,18 @@ public struct MUKHotkeyRecorder: View {
     @State private var monitor: Any?
     @State private var peakModifiers: MUKHotkey.Modifiers = []
 
-    public init(hotkey: Binding<MUKHotkey>) {
+    private let allowsModifierOnly: Bool
+
+    /// - Parameter allowsModifierOnly: pass false for shortcuts that need a key (e.g. one
+    ///   registered with `MUKCarbonHotKey`); modifier-only presses are then ignored.
+    public init(hotkey: Binding<MUKHotkey>, allowsModifierOnly: Bool = true) {
         self._hotkey = hotkey
+        self.allowsModifierOnly = allowsModifierOnly
+    }
+
+    /// Whether a recorded candidate is acceptable under the recorder's mode.
+    static func accepts(_ candidate: MUKHotkey, allowsModifierOnly: Bool) -> Bool {
+        allowsModifierOnly || candidate.keyCode != nil
     }
 
     public var body: some View {
@@ -77,6 +87,10 @@ public struct MUKHotkeyRecorder: View {
     }
 
     private func commit(_ candidate: MUKHotkey) {
+        guard Self.accepts(candidate, allowsModifierOnly: allowsModifierOnly) else {
+            peakModifiers = []  // modifier-only not allowed here; keep recording
+            return
+        }
         if case .block = MUKHotkeyConflicts.evaluate(candidate) {
             peakModifiers = []  // reject; keep recording
             return
