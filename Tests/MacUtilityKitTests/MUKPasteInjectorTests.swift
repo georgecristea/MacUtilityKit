@@ -3,6 +3,7 @@ import XCTest
 
 final class MUKPasteInjectorTests: XCTestCase {
     func testPasteKeyFollowsTheCurrentLayout() {
-        XCTAssertEqual(MUKPasteInjector.pasteKeyCode, MUKKeyboardLayout.keyCode(for: "v") ?? 9)
+        // Resolved with ⌘ held, so "Dvorak – QWERTY ⌘" style layouts get the key that is V with ⌘.
+        XCTAssertEqual(MUKPasteInjector.pasteKeyCode, MUKKeyboardLayout.keyCode(for: "v", commandHeld: true) ?? 9)
     }
 }

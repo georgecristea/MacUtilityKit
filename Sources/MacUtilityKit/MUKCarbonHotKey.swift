@@ -8,7 +8,9 @@ import Carbon.HIToolbox
 /// key; modifier-only bindings cannot be registered.
 @MainActor
 public final class MUKCarbonHotKey {
-    private let id: UInt32
+    let id: UInt32
+    /// "MUKH": marks hotkeys registered by this type, so others' hotkeys are left alone.
+    static let signature = OSType(0x4D55_4B48)
     private var ref: EventHotKeyRef?
 
     /// True while the shortcut is registered with the system.
@@ -34,7 +36,7 @@ public final class MUKCarbonHotKey {
     public func update(binding: MUKHotkey) -> Bool {
         stop()
         guard let keyCode = binding.keyCode else { return false }
-        let hotKeyID = EventHotKeyID(signature: OSType(0x4D55_4B48), id: id) // "MUKH"
+        let hotKeyID = EventHotKeyID(signature: Self.signature, id: id)
         let status = RegisterEventHotKey(UInt32(keyCode), Self.carbonModifiers(binding.modifiers), hotKeyID,
                                          GetApplicationEventTarget(), 0, &ref)
         isRegistered = status == noErr
@@ -58,6 +60,12 @@ public final class MUKCarbonHotKey {
         return result
     }
 
+    /// The closure for a pressed hotkey, or nil when it was not registered by `MUKCarbonHotKey`.
+    static func action(for hotKeyID: EventHotKeyID) -> (() -> Void)? {
+        guard hotKeyID.signature == signature else { return nil }
+        return actions[hotKeyID.id]
+    }
+
     // One Carbon handler for the process, dispatching to the registered closures by id.
     private static var nextID: UInt32 = 1
     private static var actions: [UInt32: () -> Void] = [:]
@@ -69,10 +77,13 @@ public final class MUKCarbonHotKey {
         var spec = EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyPressed))
         InstallEventHandler(GetApplicationEventTarget(), { _, event, _ in
             var hotKeyID = EventHotKeyID()
-            GetEventParameter(event, EventParamName(kEventParamDirectObject), EventParamType(typeEventHotKeyID),
-                              nil, MemoryLayout<EventHotKeyID>.size, nil, &hotKeyID)
-            let id = hotKeyID.id
-            DispatchQueue.main.async { MainActor.assumeIsolated { MUKCarbonHotKey.actions[id]?() } }
+            let status = GetEventParameter(event, EventParamName(kEventParamDirectObject), EventParamType(typeEventHotKeyID),
+                                           nil, MemoryLayout<EventHotKeyID>.size, nil, &hotKeyID)
+            // Leave other code's hotkeys (another library in the same app) to their own handlers.
+            guard status == noErr, hotKeyID.signature == MUKCarbonHotKey.signature else {
+                return OSStatus(eventNotHandledErr)
+            }
+            DispatchQueue.main.async { MainActor.assumeIsolated { MUKCarbonHotKey.action(for: hotKeyID)?() } }
             return noErr
         }, 1, &spec, nil, nil)
     }

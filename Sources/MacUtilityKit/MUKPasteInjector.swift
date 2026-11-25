@@ -39,9 +39,9 @@ public final class MUKPasteInjector {
         return true
     }
 
-    /// The key that types "v" in the current keyboard layout (9 on US-style layouts), so ⌘V
-    /// also pastes on layouts such as Dvorak.
-    nonisolated static var pasteKeyCode: CGKeyCode { MUKKeyboardLayout.keyCode(for: "v") ?? 9 }
+    /// The key that types "v" with ⌘ held in the current keyboard layout (9 on US-style
+    /// layouts), so ⌘V also pastes on layouts such as Dvorak.
+    nonisolated static var pasteKeyCode: CGKeyCode { MUKKeyboardLayout.keyCode(for: "v", commandHeld: true) ?? 9 }
 
     private func sendPasteShortcut() {
         let source = CGEventSource(stateID: .hidSystemState)

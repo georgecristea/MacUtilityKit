@@ -22,6 +22,18 @@ final class MUKCarbonHotKeyTests: XCTestCase {
         hotKey.stop()
     }
 
+    func testOnlyOwnSignatureDispatches() {
+        let rare = MUKHotkey(keyCode: UInt16(kVK_F18), modifiers: [.control, .option, .shift, .command])
+        var fired = 0
+        let hotKey = MUKCarbonHotKey(binding: rare) { fired += 1 }
+        defer { hotKey.stop() }
+        let ours = EventHotKeyID(signature: MUKCarbonHotKey.signature, id: hotKey.id)
+        let foreign = EventHotKeyID(signature: OSType(0x4F54_4852), id: hotKey.id) // another library, same id
+        XCTAssertNil(MUKCarbonHotKey.action(for: foreign))
+        MUKCarbonHotKey.action(for: ours)?()
+        XCTAssertEqual(fired, 1)
+    }
+
     func testModifierOnlyBindingIsNotRegistered() {
         let hotKey = MUKCarbonHotKey(binding: MUKHotkey(keyCode: nil, modifiers: [.command])) {}
         XCTAssertFalse(hotKey.isRegistered)

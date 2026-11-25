@@ -13,7 +13,7 @@ final class MUKKeyboardLayoutTests: XCTestCase {
             letters += 1
             let back = MUKKeyboardLayout.keyCode(for: c)
             XCTAssertNotNil(back)
-            XCTAssertEqual(back.flatMap(MUKKeyboardLayout.character(for:)), c)
+            XCTAssertEqual(back.flatMap { MUKKeyboardLayout.character(for: $0) }, c)
         }
         XCTAssertGreaterThanOrEqual(letters, 20, "the current layout should type at least 20 letters")
     }
