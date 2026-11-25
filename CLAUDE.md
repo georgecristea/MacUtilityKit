@@ -17,8 +17,10 @@ Sources/MacUtilityKit/
   MUKPermissions.swift     MUKPermissionState, MUKPermissions (microphone + accessibility)
   MUKOnboarding.swift      MUKPermissionRequirement, MUKOnboardingView (first-run checklist)
   MUKHotkey*.swift         MUKHotkey, MUKHotkeyEngine (hold), MUKHotkeyRecorder, conflict checks
-  MUKGlobalShortcut.swift  tap-to-trigger shortcut
-  MUKPasteInjector.swift   synthesized ⌘V + pasteboard snapshot/restore
+  MUKGlobalShortcut.swift  tap-to-trigger shortcut (NSEvent monitors; needs Accessibility)
+  MUKCarbonHotKey.swift    tap-to-trigger shortcut via Carbon (no permission, consumes the key)
+  MUKKeyboardLayout.swift  key code <-> character in the current keyboard layout
+  MUKPasteInjector.swift   synthesized ⌘V (layout-aware) + pasteboard snapshot/restore
   MUKPreviewPanel.swift    floating, non-activating preview panel
   MUKHardware.swift        chip / RAM / core detection
   MUKLaunchAtLoginManager.swift   LaunchAgent-based launch-at-login
